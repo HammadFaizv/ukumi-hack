@@ -7,42 +7,45 @@ import streamlit as st
 import torch
 from diffusers import DiffusionPipeline
 import os
-from dotenv import load_dotenv
-from langchain_community.document_loaders.web_base import WebBaseLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-import nest_asyncio
-from langchain_community.vectorstores.chroma import Chroma
-from langchain_huggingface.embeddings import HuggingFaceEmbeddings
-from langchain.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+
+from transcript_gen import transcript_gen
+
+# from dotenv import load_dotenv
+# from langchain_community.document_loaders.web_base import WebBaseLoader
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# import nest_asyncio
+# from langchain_community.vectorstores.chroma import Chroma
+# from langchain_huggingface.embeddings import HuggingFaceEmbeddings
+# from langchain.prompts import ChatPromptTemplate
+# from langchain_core.pydantic_v1 import BaseModel, Field
 from typing import Literal
-from langchain.chains.combine_documents import stuff
+# from langchain.chains.combine_documents import stuff
 from operator import itemgetter
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
-from IPython.core.display import Markdown
+# from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+# from IPython.core.display import Markdown
 import json
 import re
-from langchain_core.runnables import (
-    RunnableParallel,
-    RunnableBranch,
-    RunnablePassthrough,
-)
-from langchain_core.pydantic_v1 import validator
-from langchain_core.messages import HumanMessage, AIMessage
-from operator import itemgetter
-import asyncio
+# from langchain_core.runnables import (
+    # RunnableParallel,
+    # RunnableBranch,
+    # RunnablePassthrough,
+# )
+# from langchain_core.pydantic_v1 import validator
+# from langchain_core.messages import HumanMessage, AIMessage
+# from operator import itemgetter
+# import asyncio
 import warnings
-import PyPDF2
-from typing import overload, Optional
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import OllamaEmbeddings
-from langchain_groq import ChatGroq
-from sentence_transformers import SentenceTransformer
-from typing import TypedDict, Annotated
-from langchain_core.documents import Document
-from langgraph.prebuilt import ToolInvocation, ToolExecutor
-from langchain_core.tools import Tool
-from langchain_core.messages.base import BaseMessage
+# import PyPDF2
+# from typing import overload, Optional
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain_community.embeddings import OllamaEmbeddings
+# from langchain_groq import ChatGroq
+# from sentence_transformers import SentenceTransformer
+# from typing import TypedDict, Annotated
+# from langchain_core.documents import Document
+# from langgraph.prebuilt import ToolInvocation, ToolExecutor
+# from langchain_core.tools import Tool
+# from langchain_core.messages.base import BaseMessage
 import operator
 
 warnings.filterwarnings("ignore")
@@ -73,7 +76,31 @@ def generate(
     elif version=="stable-diffusion":
         pass
     elif version == 'aiola/whisper-medusa-v1':
-        pass
+            pass
+    elif version == 'deepgram_whisper':
+        res = transcript_gen(prompt)
+        
+        transcript = res['results']['channels'][0]['alternatives'][0]['transcript']
+        # Extracting sentences and their timestamps
+        sentences = []
+
+        for channel in res['results']['channels']:
+            for alternative in channel['alternatives']:
+                for paragraph in alternative['paragraphs']['paragraphs']:
+                    for sentence in paragraph['sentences']:
+                        start_time = sentence['start']
+                        end_time = sentence['end']
+                        text = sentence['text']
+                        sentences.append((start_time, end_time, text))
+
+        st.subheader("Transcript: ")
+        for start, end, sentence in sentences:
+            st.write(f"**Start:** {start:.2f}s, **End:** {end:.2f}s")
+            st.write(f"{sentence}")
+            st.write("---")
+
+        return transcript
+
     elif version == 'openbmb/MiniCPM-Llama3-V-2_5':
         pass
 

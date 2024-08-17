@@ -1,7 +1,7 @@
 from typing import Optional
 
 import streamlit as st
-from streamlit_drawable_canvas import st_canvas
+# from streamlit_drawable_canvas import st_canvas
 from PIL import Image
 from utils import generate
 
@@ -10,6 +10,9 @@ DEFAULT_WIDTH, DEFAULT_HEIGHT = 512, 512
 OUTPUT_IMAGE_KEY = "output_img"
 LOADED_IMAGE_KEY = "loaded_image"
 
+## test url : https://www.youtube.com/watch?v=ayKJsoa-GU0, https://www.youtube.com/watch?v=BG7273yDpdA
+
+TRANSCRIPT = ""
 
 def get_image(key: str) -> Optional[Image.Image]:
     if key in st.session_state:
@@ -45,6 +48,7 @@ def prompt_and_generate_button(
     )
 
     if st.button("Generate ", key=f"{prefix}-btn"):
+        # st.video(prompt)
         with st.spinner("Generating ..."):
             # common function for generation
             output = generate(
@@ -68,7 +72,6 @@ def prompt_and_generate_button(
 
 
 
-
 def image_uploader(prefix):
     image = st.file_uploader("Image", ["jpg", "png"], key=f"{prefix}-uploader")
     if image:
@@ -83,10 +86,12 @@ def image_uploader(prefix):
 
 def transcript_tab():
     prefix = "transcript"    
-    # function for generating rtanscript using llm
-    prompt_and_generate_button(
-        prefix=prefix
+    # function for generating transcript using llm
+    TRANSCRIPT = prompt_and_generate_button(
+        prefix=prefix,
+        version='deepgram_whisper'
     )
+    print(TRANSCRIPT)
 
 
 def scenic_question_answer_tab():
